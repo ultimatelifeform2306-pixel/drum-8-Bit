@@ -236,6 +236,40 @@ input[type="range"] { accent-color: var(--red); width: 110px; }
 .cart[aria-pressed="true"] { border-color: var(--c); color: var(--fg); background: color-mix(in srgb, var(--c) 18%, var(--panel-2)); }
 .cart[aria-pressed="true"] small { color: var(--c); }
 
+/* Remix */
+.remix { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.remix-play {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  background: var(--gold);
+  color: #1a1203;
+  border-color: var(--gold);
+}
+.remix-play[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+.remix-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 200px; }
+.remix-info b { font-size: 16px; font-weight: 700; }
+.remix-info span { font-size: 12px; color: var(--muted); }
+.sections { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 100%; }
+.sections span {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.sections span.now { color: #1a1203; background: var(--gold); border-color: var(--gold); }
+.kit { display: flex; gap: 4px; }
+.kit button { padding: 5px 9px; font-size: 12px; }
+.loop-group { display: flex; flex-direction: column; gap: 6px; }
+.loop-group h3 { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
 footer { font-size: 12px; color: var(--muted); max-width: 70ch; line-height: 1.5; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -268,7 +302,7 @@ footer { font-size: 12px; color: var(--muted); max-width: 70ch; line-height: 1.5
       </div>
       <div class="grp" aria-label="Tempo">
         <button id="bpmDown" aria-label="Slower">−</button>
-        <span class="bpm-read" id="bpmRead">128</span>
+        <span class="bpm-read" id="bpmRead">144</span>
         <button id="bpmUp" aria-label="Faster">+</button>
         <span class="hint">BPM</span>
       </div>
@@ -282,11 +316,23 @@ footer { font-size: 12px; color: var(--muted); max-width: 70ch; line-height: 1.5
     <div class="steps" id="steps" aria-hidden="true"></div>
   </section>
 
+  <section class="panel remix" aria-label="Desert Zone remix">
+    <button class="remix-play" id="remixBtn" aria-pressed="false">▶ Play Desert Zone Remix</button>
+    <div class="remix-info">
+      <b>Desert Zone Remix</b>
+      <span>Your clip's tempo (144 BPM) and its D–E♭ desert scale, rebuilt with 16-bit FM drums, sitar, flute and slap bass. Tap pads along with it.</span>
+    </div>
+    <div class="sections" id="sections"></div>
+  </section>
+
   <div class="main">
     <section class="panel" aria-label="Drum pads">
       <div class="panel-head">
         <h2>Drum pads</h2>
-        <span class="hint">Keys 1–4 · Q–R · A–F · Z–V</span>
+        <div class="kit" role="group" aria-label="Drum kit">
+          <button id="kitDesert" aria-pressed="true">Desert Zone</button>
+          <button id="kitClassic" aria-pressed="false">Classic FM</button>
+        </div>
       </div>
       <div class="pads" id="pads"></div>
     </section>
@@ -309,9 +355,11 @@ footer { font-size: 12px; color: var(--muted); max-width: 70ch; line-height: 1.5
       <section class="panel" aria-label="Loops">
         <div class="panel-head">
           <h2>Loop carts</h2>
-          <span class="hint">Tap to toggle · all in A minor</span>
+          <span class="hint">Tap to toggle</span>
         </div>
-        <div class="loops" id="loops"></div>
+        <div class="loop-group"><h3>Desert Zone · 144 BPM · D Phrygian</h3><div class="loops" id="loopsDesert"></div></div>
+        <div class="loop-group"><h3>Classic · 128 BPM · A minor</h3><div class="loops" id="loopsClassic"></div></div>
+        <span class="hint">Pads: keys 1–4 · Q–R · A–F · Z–V. Space plays or stops.</span>
       </section>
     </div>
   </div>
@@ -583,24 +631,127 @@ const KIT = {
   }
 };
 
-const DRUMS = [
-  { id: "kick", name: "Kick", cat: "red", key: "1" },
-  { id: "boom", name: "Boom", cat: "red", key: "2" },
-  { id: "snare", name: "Snare", cat: "gold", key: "3" },
-  { id: "crunch", name: "Crunch", cat: "gold", key: "4" },
-  { id: "clap", name: "Clap", cat: "gold", key: "q" },
-  { id: "rim", name: "Rim", cat: "gold", key: "w" },
-  { id: "chat", name: "Hat", cat: "cyan", key: "e" },
-  { id: "ohat", name: "Open Hat", cat: "cyan", key: "r" },
-  { id: "tomhi", name: "Tom Hi", cat: "green", key: "a" },
-  { id: "tommid", name: "Tom Mid", cat: "green", key: "s" },
-  { id: "tomlo", name: "Tom Lo", cat: "green", key: "d" },
-  { id: "ride", name: "Ride", cat: "cyan", key: "f" },
-  { id: "crash", name: "Crash", cat: "cyan", key: "z" },
-  { id: "cowbell", name: "Cowbell", cat: "violet", key: "x" },
-  { id: "orch", name: "Orch Hit", cat: "violet", key: "c" },
-  { id: "laser", name: "Laser", cat: "violet", key: "v" }
-];
+/* ---- Desert Zone kit: punchy 8-bit DAC drums, FM toms, darbuka, zills ---- */
+function desertTom(f) {
+  return (t, v, d) => {
+    const o = mkOsc("sine", f * 2.2, t, 0.7);
+    o.frequency.exponentialRampToValueAtTime(f * 1.1, t + 0.06);
+    o.frequency.exponentialRampToValueAtTime(f, t + 0.4);
+    fmMod(o, f * 1.5, t, f * 3, 1, 0.08, 0.2);
+    o.connect(amp(t, 0.95 * v, 0.5, d));
+    mkNoise(t, 0.04, 0.6).connect(filt("lowpass", 2500)).connect(amp(t, 0.25 * v, 0.02, d));
+  };
+}
+Object.assign(KIT, {
+  d_kick(t, v, d) {
+    const sh = ctx.createWaveShaper(); sh.curve = clipCurve; sh.connect(d);
+    const o = mkOsc("sine", 190, t, 0.35);
+    o.frequency.exponentialRampToValueAtTime(48, t + 0.07);
+    o.connect(amp(t, 0.85 * v, 0.24, sh));
+    mkNoise(t, 0.02, 0.5).connect(filt("lowpass", 3000)).connect(amp(t, 0.5 * v, 0.012, d));
+  },
+  d_sub(t, v, d) {
+    const o = mkOsc("sine", 95, t, 0.8);
+    o.frequency.exponentialRampToValueAtTime(40, t + 0.22);
+    o.connect(amp(t, 1 * v, 0.6, d));
+  },
+  d_snare(t, v, d) {
+    const sh = ctx.createWaveShaper(); sh.curve = clipCurve; sh.connect(d);
+    const o = mkOsc("triangle", 330, t, 0.1);
+    o.frequency.exponentialRampToValueAtTime(185, t + 0.035);
+    o.connect(amp(t, 0.55 * v, 0.07, sh));
+    mkNoise(t, 0.25, 0.7).connect(filt("bandpass", 3400, 0.6)).connect(amp(t, 0.9 * v, 0.16, sh));
+  },
+  d_crack(t, v, d) {
+    mkNoise(t, 0.1).connect(filt("highpass", 2500)).connect(amp(t, 0.55 * v, 0.07, d));
+    mkOsc("square", 900, t, 0.03).connect(filt("bandpass", 1000, 2)).connect(amp(t, 0.3 * v, 0.02, d));
+  },
+  d_clap: (t, v, d) => KIT.clap(t, v, d),
+  d_tamb(t, v, d) {
+    [0, 0.014].forEach((o, i) => {
+      mkNoise(t + o, 0.15).connect(filt("bandpass", i ? 9000 : 7000, 1.5)).connect(amp(t + o, 0.35 * v, 0.1, d));
+    });
+  },
+  d_hat(t, v, d) { KIT.chat(t, v * 0.9, d); },
+  d_ohat(t, v, d) { KIT.ohat(t, v, d); },
+  d_doum(t, v, d) {
+    const o = mkOsc("sine", 100, t, 0.5);
+    o.frequency.exponentialRampToValueAtTime(74, t + 0.1);
+    fmMod(o, 150, t, 120, 1, 0.05, 0.1);
+    o.connect(amp(t, 0.9 * v, 0.38, d));
+  },
+  d_tek(t, v, d) {
+    const o = mkOsc("sine", 540, t, 0.12);
+    o.frequency.exponentialRampToValueAtTime(470, t + 0.03);
+    fmMod(o, 540 * 1.6, t, 600, 1, 0.03, 0.06);
+    o.connect(amp(t, 0.45 * v, 0.06, d));
+    mkNoise(t, 0.03).connect(filt("highpass", 4000)).connect(amp(t, 0.3 * v, 0.02, d));
+  },
+  d_tomhi: desertTom(240),
+  d_tomlo: desertTom(130),
+  d_crash(t, v, d) { KIT.crash(t, v, d); },
+  d_zill(t, v, d) {
+    const o = mkOsc("sine", 2350, t, 1.4);
+    fmMod(o, 2350 * 1.41, t, 4000, 300, 1.0, 1.4);
+    o.connect(amp(t, 0.14 * v, 1.2, d));
+  },
+  d_shaker(t, v, d) {
+    mkNoise(t, 0.12).connect(filt("bandpass", 6000, 1)).connect(amp(t, 0.28 * v, 0.06, d, 0.015));
+  },
+  d_stab(t, v, d) {
+    const lp = filt("lowpass", 4000);
+    const g = amp(t, 1 * v, 0.5, lp, 0.004);
+    lp.connect(d);
+    [73.42, 146.83, 185, 220, 293.66, 311.13].forEach(f => {
+      const o = mkOsc("sine", f * 1.03, t, 0.6);
+      o.frequency.exponentialRampToValueAtTime(f, t + 0.05);
+      fmMod(o, f, t, f * 4, f * 0.8, 0.3, 0.6);
+      const og = ctx.createGain(); og.gain.value = 0.16;
+      o.connect(og).connect(g);
+    });
+  }
+});
+
+const KEYS = ["1", "2", "3", "4", "q", "w", "e", "r", "a", "s", "d", "f", "z", "x", "c", "v"];
+const withKeys = list => list.map((d, i) => ({ ...d, key: KEYS[i] }));
+const DRUM_SETS = {
+  desert: withKeys([
+    { id: "d_kick", name: "Kick", cat: "red" },
+    { id: "d_sub", name: "Sub Kick", cat: "red" },
+    { id: "d_snare", name: "Snare", cat: "gold" },
+    { id: "d_crack", name: "Crack", cat: "gold" },
+    { id: "d_clap", name: "Clap", cat: "gold" },
+    { id: "d_tamb", name: "Tamb", cat: "cyan" },
+    { id: "d_hat", name: "Hat", cat: "cyan" },
+    { id: "d_ohat", name: "Open Hat", cat: "cyan" },
+    { id: "d_doum", name: "Doum", cat: "green" },
+    { id: "d_tek", name: "Tek", cat: "green" },
+    { id: "d_tomhi", name: "Tom Hi", cat: "green" },
+    { id: "d_tomlo", name: "Tom Lo", cat: "green" },
+    { id: "d_crash", name: "Crash", cat: "cyan" },
+    { id: "d_zill", name: "Zill", cat: "violet" },
+    { id: "d_shaker", name: "Shaker", cat: "violet" },
+    { id: "d_stab", name: "Desert Stab", cat: "violet" }
+  ]),
+  classic: withKeys([
+    { id: "kick", name: "Kick", cat: "red" },
+    { id: "boom", name: "Boom", cat: "red" },
+    { id: "snare", name: "Snare", cat: "gold" },
+    { id: "crunch", name: "Crunch", cat: "gold" },
+    { id: "clap", name: "Clap", cat: "gold" },
+    { id: "rim", name: "Rim", cat: "gold" },
+    { id: "chat", name: "Hat", cat: "cyan" },
+    { id: "ohat", name: "Open Hat", cat: "cyan" },
+    { id: "tomhi", name: "Tom Hi", cat: "green" },
+    { id: "tommid", name: "Tom Mid", cat: "green" },
+    { id: "tomlo", name: "Tom Lo", cat: "green" },
+    { id: "ride", name: "Ride", cat: "cyan" },
+    { id: "crash", name: "Crash", cat: "cyan" },
+    { id: "cowbell", name: "Cowbell", cat: "violet" },
+    { id: "orch", name: "Orch Hit", cat: "violet" },
+    { id: "laser", name: "Laser", cat: "violet" }
+  ])
+};
 
 function playDrum(id, t, v = 1) {
   if (!ctx) return;
@@ -621,7 +772,7 @@ const INSTS = [
   { id: "brass", name: "Brass", tag: "FM lead", oct: 0, vol: 0.7, filter: 5000,
     car: [{ r: 1 }, { r: 1, dt: 6, g: 0.5 }], mod: [{ r: 1, i: 3.5, a: 0.06, d: 0.3, s: 0.7 }],
     E: { a: 0.035, d: 0.3, s: 0.8, r: 0.12 }, vib: { rate: 5.5, depth: 0.006, delay: 0.25 } },
-  { id: "lead", name: "Hero Lead", tag: "FM lead", oct: 1, vol: 0.6,
+  { id: "lead", bank: "classic", name: "Hero Lead", tag: "FM lead", oct: 1, vol: 0.6,
     car: [{ r: 1 }, { r: 1, dt: -9, g: 0.5 }], mod: [{ r: 2, i: 1.8, d: 0.4, s: 0.6 }],
     E: { a: 0.01, d: 0.2, s: 0.85, r: 0.1 }, vib: { rate: 5.8, depth: 0.012, delay: 0.18 } },
   { id: "epiano", name: "E. Piano", tag: "FM keys", oct: 0, vol: 0.7,
@@ -647,7 +798,13 @@ const INSTS = [
     E: { a: 0.25, d: 0.5, s: 0.9, r: 0.5 }, vib: { rate: 5, depth: 0.004, delay: 0.3 } },
   { id: "psg", name: "PSG Square", tag: "Chip pulse", oct: 1, vol: 0.4,
     car: [{ r: 1, w: "square" }],
-    E: { a: 0.001, d: 0.12, s: 0.6, r: 0.04 }, vib: { rate: 6, depth: 0.01, delay: 0.3 } }
+    E: { a: 0.001, d: 0.12, s: 0.6, r: 0.04 }, vib: { rate: 6, depth: 0.01, delay: 0.3 } },
+  { id: "sitar", name: "Sand Sitar", tag: "FM pluck", oct: 0, vol: 0.7, filter: 4500, bend: 1, bendT: 0.06,
+    car: [{ r: 1 }, { r: 1, dt: 14, g: 0.4 }, { r: 2, g: 0.2 }], mod: [{ r: 1, i: 5, d: 0.3, s: 0.25 }, { r: 3, i: 1, d: 0.1, s: 0 }],
+    E: { a: 0.001, d: 1.1, s: 0, r: 0.2 } },
+  { id: "flute", name: "Desert Flute", tag: "FM wind", oct: 1, vol: 0.55,
+    car: [{ r: 1 }, { r: 2, g: 0.15 }], mod: [{ r: 1, i: 0.6, a: 0.08, d: 0.3, s: 0.4 }],
+    E: { a: 0.06, d: 0.3, s: 0.85, r: 0.15 }, vib: { rate: 5, depth: 0.01, delay: 0.2 } }
 ];
 const INST_BY_ID = Object.fromEntries(INSTS.map(i => [i.id, i]));
 
@@ -671,11 +828,16 @@ function playNote(inst, midi, t, vel = 1) {
   } else head.connect(synthBus);
 
   const nodes = [];
+  const bendK = inst.bend ? Math.pow(2, inst.bend / 12) : 1;
+  const setF = (param, f) => {
+    param.setValueAtTime(f * bendK, t);
+    if (inst.bend) param.exponentialRampToValueAtTime(f, t + inst.bendT);
+  };
   const gsum = inst.car.reduce((s, c) => s + (c.g ?? 1), 0);
   const carriers = inst.car.map(c => {
     const o = ctx.createOscillator();
     o.type = c.w || "sine";
-    o.frequency.setValueAtTime(freq * c.r, t);
+    setF(o.frequency, freq * c.r);
     if (c.dt) o.detune.setValueAtTime(c.dt, t);
     const g = ctx.createGain(); g.gain.value = (c.g ?? 1) / gsum;
     o.connect(g).connect(vg);
@@ -687,7 +849,7 @@ function playNote(inst, midi, t, vel = 1) {
   const mods = (inst.mod || []).map(m => {
     const o = ctx.createOscillator();
     o.type = "sine";
-    o.frequency.setValueAtTime(freq * m.r, t);
+    setF(o.frequency, freq * m.r);
     const g = ctx.createGain();
     const peak = m.i * freq * m.r * ks;
     if (m.a) {
@@ -758,28 +920,68 @@ function noteToMidi(n) {
   return base + acc + (parseInt(m[3], 10) + 1) * 12;
 }
 const LOOPS = [
-  { id: "beatA", name: "Zone Beat", tag: "Drums", c: "red",
+  // Desert Zone remix · 144 BPM · D Phrygian dominant (D Eb F# G A Bb C). x = hit, o = ghost hit.
+  { id: "dIntro", name: "Sand Pulse", tag: "Desert drums", c: "red", bank: "desert",
+    drums: { d_kick: "x.......x.......", d_shaker: "x.xxx.xxx.xxx.xx", d_zill: "x..............." } },
+  { id: "dBeatA", name: "Dune Beat", tag: "Desert drums", c: "red", bank: "desert",
+    drums: { d_kick: "x.....x...x.x...x.....x...x.....", d_snare: "....x.......x.......x.......x..x",
+             d_hat: "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.", d_tamb: "..x...x...x...x...x...x...x...x." } },
+  { id: "dBeatB", name: "Quicksand Break", tag: "Desert drums", c: "red", bank: "desert",
+    drums: { d_kick: "x.x...x...x..x..x.x...x.x....x..", d_snare: "....x..o.o..x.......x..o.o..x.xx",
+             d_ohat: "..x...x...x...x...x...x...x...x.", d_shaker: "xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo" } },
+  { id: "dDarbuka", name: "Darbuka", tag: "Doum + tek", c: "green", bank: "desert",
+    drums: { d_doum: "x.......x.......", d_tek: "..x..ox.o.o.x.ox", d_tamb: "....x.......x..." } },
+  { id: "dFill", name: "Tom Fill", tag: "FM toms", c: "green", bank: "desert",
+    drums: { d_tomhi: "x.x.x.x.........", d_tomlo: "........x.x.x.x.", d_snare: "............xxxx", d_kick: "x.......x......." } },
+  { id: "dCrash", name: "Crash Hit", tag: "Section start", c: "cyan", bank: "desert",
+    drums: { d_crash: "x" + ".".repeat(63), d_stab: "x" + ".".repeat(63) } },
+  { id: "dBass", name: "Pyramid Bass", tag: "Slap bass", c: "gold", bank: "desert", inst: "slap",
+    pat: "D2 . D3 . D2 D2 Eb2 . D2 . C3 D3 . A1 C2 Eb2 D2 . D3 . D2 D2 Eb2 . F#2 . G2 . F#2 Eb2 C2 Bb1" },
+  { id: "dSitar", name: "Sitar Riff", tag: "Sand sitar", c: "violet", bank: "desert", inst: "sitar",
+    pat: "D4 Eb4 F#4 . G4 F#4 Eb4 . D4 - . A3 Bb3 - C4 Eb4 D4 - - - Eb4 D4 C4 Bb3 A3 - C4 Bb3 A3 - - ." },
+  { id: "dFlute", name: "Mirage Melody", tag: "Desert flute", c: "violet", bank: "desert", inst: "flute",
+    pat: "A4 - - - Bb4 - A4 - G4 - F#4 - G4 - - - A4 - - - Bb4 - C5 - D5 - - - C5 Bb4 A4 - G4 - - - F#4 - G4 - A4 - Bb4 - A4 - G4 - F#4 - Eb4 - D4 - - - - - - - . . . ." },
+  { id: "dArp", name: "Heat Arp", tag: "Crystal bell", c: "cyan", bank: "desert", inst: "bell",
+    pat: "D5 A4 F#4 A4 Eb5 A4 F#4 A4 D5 A4 G4 A4 C5 A4 F#4 A4" },
+  { id: "dDrone", name: "Oasis Drone", tag: "Strings", c: "green", bank: "desert", inst: "strings",
+    pat: "D3+F#3+A3 - - - - - - - - - - - - - - - Eb3+G3+Bb3 - - - - - - - D3+F#3+A3 - - - - - - -" },
+  { id: "beatA", bank: "classic", name: "Zone Beat", tag: "Drums", c: "red",
     drums: { kick: "x.....x...x.....", snare: "....x.......x...", chat: "x.x.x.x.x.x.x.x." } },
-  { id: "beatB", name: "Speed Break", tag: "Drums", c: "red",
+  { id: "beatB", bank: "classic", name: "Speed Break", tag: "Drums", c: "red",
     drums: { kick: "x.x.......x.....", crunch: "....x..x.x..x...", chat: "xxxxxxxxxxxxxx..", ohat: "..............x." } },
-  { id: "beatC", name: "Boss Stomp", tag: "Drums", c: "red",
+  { id: "beatC", bank: "classic", name: "Boss Stomp", tag: "Drums", c: "red",
     drums: { boom: "x..x..x...x..x..", clap: "....x.......x...", tomlo: "..............xx", ride: "x...x...x...x..." } },
-  { id: "bass", name: "Zone Bass", tag: "Slap bass", c: "gold", inst: "slap",
+  { id: "bass", bank: "classic", name: "Zone Bass", tag: "Slap bass", c: "gold", inst: "slap",
     pat: "A1 . A2 . A1 A1 G2 A2 F1 . F2 . F1 F1 E2 F2 C2 . C3 . C2 C2 B2 C3 G1 . G2 . G1 B1 D2 G2" },
-  { id: "arp", name: "Crystal Arp", tag: "Marimba", c: "cyan", inst: "marimba",
+  { id: "arp", bank: "classic", name: "Crystal Arp", tag: "Marimba", c: "cyan", inst: "marimba",
     pat: "A4 C5 E5 A5 E5 C5 A4 C5 F4 A4 C5 F5 C5 A4 F4 A4 C5 E5 G5 C6 G5 E5 C5 E5 G4 B4 D5 G5 D5 B4 G4 B4" },
   { id: "lead", name: "Hero Theme", tag: "Brass", c: "violet", inst: "brass",
     pat: "E5 - - - D5 - C5 - A4 - - - C5 - D5 - E5 - G5 - E5 - D5 C5 B4 - - - - - . ." },
-  { id: "pad", name: "Sky Chords", tag: "Strings", c: "green", inst: "strings",
+  { id: "pad", bank: "classic", name: "Sky Chords", tag: "Strings", c: "green", inst: "strings",
     pat: "A3+C4+E4 - - - - - - - F3+A3+C4 - - - - - - - G3+C4+E4 - - - - - - - G3+B3+D4 - - - - - - -" },
-  { id: "boss", name: "Boss Riff", tag: "Synth bass", c: "gold", inst: "synbass",
+  { id: "boss", bank: "classic", name: "Boss Riff", tag: "Synth bass", c: "gold", inst: "synbass",
     pat: "A1 A1 A2 A1 C2 A1 D#2 E2 A1 A1 A2 A1 G2 F2 E2 D#2" }
 ];
 LOOPS.forEach(l => { if (l.pat) l.parsed = parsePattern(l.pat); });
 const activeLoops = new Set();
+const LOOP_BY_ID = Object.fromEntries(LOOPS.map(l => [l.id, l]));
+
+// The arranged remix: sections play in order, then the song loops from the top.
+const SONG = [
+  { name: "Intro", bars: 2, loops: ["dIntro", "dDrone"] },
+  { name: "Verse", bars: 4, loops: ["dCrash", "dBeatA", "dBass", "dSitar"] },
+  { name: "Chorus", bars: 4, loops: ["dCrash", "dBeatB", "dBass", "dFlute", "dArp"] },
+  { name: "Break", bars: 2, loops: ["dDarbuka", "dBass", "dDrone"] },
+  { name: "Fill", bars: 1, loops: ["dFill"] },
+  { name: "Finale", bars: 4, loops: ["dCrash", "dBeatB", "dBass", "dSitar", "dFlute", "dArp"] }
+];
+let off = 0;
+SONG.forEach(sec => { sec.offset = off; off += sec.bars * 16; });
+const SONG_STEPS = off;
+let songMode = false, songStart = 0, songSection = -1;
 
 /* ---------------- Transport + recorder ---------------- */
-let bpm = 128, playing = false, recording = false, metro = true, quant = true;
+let bpm = 144, playing = false, recording = false, metro = true, quant = true;
 let anchorTime = 0, anchorStep = 0, nextStep = 0, timer = null;
 const LOOP_STEPS = 32;
 let recEvents = [];
@@ -799,6 +1001,7 @@ function startTransport() {
   playBtn.querySelector(".btn-label").textContent = "■ Stop";
 }
 function stopTransport() {
+  if (songMode) stopSong();
   playing = false;
   clearInterval(timer); timer = null;
   setRecording(false);
@@ -812,27 +1015,34 @@ function scheduler() {
     nextStep++;
   }
 }
+function playLoopStep(l, idx, t) {
+  const sd = stepDur();
+  if (l.drums) {
+    for (const [drum, p] of Object.entries(l.drums)) {
+      const c = p[idx % p.length];
+      if (c === "x" || c === "o") { playDrum(drum, t, c === "x" ? 0.85 : 0.4); flashPadAt(drum, t); }
+    }
+  } else {
+    const { len, ev } = l.parsed;
+    const s = idx % len;
+    ev.forEach(e => {
+      if (e.step !== s) return;
+      e.notes.forEach(n => playNote(INST_BY_ID[l.inst], n, t, 0.8).stop(t + e.len * sd - 0.01));
+    });
+  }
+}
 function scheduleStep(abs, t) {
   const sd = stepDur();
   if (metro && recording && abs % 4 === 0) click(t, abs % 16 === 0);
-  activeLoops.forEach(id => {
-    const l = LOOPS.find(x => x.id === id);
-    if (l.drums) {
-      for (const [drum, p] of Object.entries(l.drums)) {
-        if (p[abs % p.length] === "x") { playDrum(drum, t, 0.85); flashPadAt(drum, t); }
-      }
-    } else {
-      const { len, ev } = l.parsed;
-      const s = abs % len;
-      ev.forEach(e => {
-        if (e.step !== s) return;
-        e.notes.forEach(n => {
-          const v = playNote(INST_BY_ID[l.inst], n, t, 0.8);
-          v.stop(t + e.len * sd - 0.01);
-        });
-      });
-    }
-  });
+  if (songMode && abs >= songStart) {
+    const r = (abs - songStart) % SONG_STEPS;
+    const si = SONG.findIndex(sec => r >= sec.offset && r < sec.offset + sec.bars * 16);
+    const sec = SONG[si];
+    if (r === sec.offset) setTimeout(() => showSection(si), Math.max(0, (t - ctx.currentTime) * 1000));
+    sec.loops.forEach(id => playLoopStep(LOOP_BY_ID[id], r - sec.offset, t));
+  } else {
+    activeLoops.forEach(id => playLoopStep(LOOP_BY_ID[id], abs, t));
+  }
   const li = abs % LOOP_STEPS;
   recEvents.forEach(ev => {
     if (Math.floor(ev.pos) !== li) return;
@@ -871,8 +1081,15 @@ function setPressed(el, on) { el.setAttribute("aria-pressed", on ? "true" : "fal
 
 // Pads
 const padsEl = $("pads");
-const padEls = {};
-DRUMS.forEach(d => {
+let padEls = {};
+let keyMap = {};
+let kitName = "desert";
+function buildPads() {
+  padsEl.innerHTML = "";
+  padEls = {};
+  const set = DRUM_SETS[kitName];
+  keyMap = Object.fromEntries(set.map(d => [d.key, d.id]));
+  set.forEach(d => {
   const b = document.createElement("button");
   b.className = "pad";
   b.style.setProperty("--c", `var(--${d.cat})`);
@@ -882,7 +1099,14 @@ DRUMS.forEach(d => {
   b.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); if (!e.repeat) hitPad(d.id); } });
   padsEl.appendChild(b);
   padEls[d.id] = b;
-});
+  });
+  setPressed($("kitDesert"), kitName === "desert");
+  setPressed($("kitClassic"), kitName === "classic");
+}
+function setKit(k) { kitName = k; buildPads(); }
+$("kitDesert").addEventListener("click", () => setKit("desert"));
+$("kitClassic").addEventListener("click", () => setKit("classic"));
+buildPads();
 function flashPad(id) {
   const el = padEls[id]; if (!el) return;
   el.classList.add("hit");
@@ -900,7 +1124,6 @@ function hitPad(id) {
 }
 
 // Keyboard shortcuts for pads
-const keyMap = Object.fromEntries(DRUMS.map(d => [d.key, d.id]));
 window.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
   const id = keyMap[e.key.toLowerCase()];
@@ -997,7 +1220,7 @@ window.addEventListener("resize", () => {
 });
 
 // Loop carts
-const loopsEl = $("loops");
+const cartEls = {};
 LOOPS.forEach(l => {
   const b = document.createElement("button");
   b.className = "cart";
@@ -1006,11 +1229,68 @@ LOOPS.forEach(l => {
   b.setAttribute("aria-pressed", "false");
   b.addEventListener("click", () => {
     initAudio();
+    if (songMode) {
+      // Take over by hand: keep what the current section is playing, then toggle
+      const sec = SONG[Math.max(0, songSection)];
+      activeLoops.clear();
+      sec.loops.forEach(id => activeLoops.add(id));
+      stopSong();
+    }
     if (activeLoops.has(l.id)) activeLoops.delete(l.id);
     else { activeLoops.add(l.id); startTransport(); }
-    setPressed(b, activeLoops.has(l.id));
+    syncCarts();
   });
-  loopsEl.appendChild(b);
+  $(l.bank === "desert" ? "loopsDesert" : "loopsClassic").appendChild(b);
+  cartEls[l.id] = b;
+});
+function syncCarts(ids) {
+  const on = ids || activeLoops;
+  for (const [id, el] of Object.entries(cartEls)) setPressed(el, on.has ? on.has(id) : on.includes(id));
+}
+
+// Desert Zone remix (song mode)
+const remixBtn = $("remixBtn");
+const sectionsEl = $("sections");
+const secEls = SONG.map(sec => {
+  const el = document.createElement("span");
+  el.textContent = `${sec.name} · ${sec.bars}`;
+  el.title = `${sec.bars} bar${sec.bars > 1 ? "s" : ""}`;
+  sectionsEl.appendChild(el);
+  return el;
+});
+function showSection(i) {
+  if (!songMode) return;
+  songSection = i;
+  secEls.forEach((el, j) => el.classList.toggle("now", j === i));
+  syncCarts(SONG[i].loops);
+}
+function stopSong() {
+  songMode = false;
+  songSection = -1;
+  secEls.forEach(el => el.classList.remove("now"));
+  setPressed(remixBtn, false);
+  remixBtn.textContent = "▶ Play Desert Zone Remix";
+}
+function startSong() {
+  initAudio();
+  activeLoops.clear();
+  if (kitName !== "desert") setKit("desert");
+  if (playing) {
+    setBpm(144);
+    songStart = Math.ceil(nextStep / 16) * 16; // join on the next bar
+  } else {
+    bpm = 144; $("bpmRead").textContent = bpm;
+    songStart = 0;
+  }
+  songMode = true;
+  setPressed(remixBtn, true);
+  remixBtn.textContent = "■ Stop Remix";
+  startTransport();
+  syncCarts([]);
+}
+remixBtn.addEventListener("click", () => {
+  if (songMode) { stopSong(); stopTransport(); syncCarts(); }
+  else startSong();
 });
 
 // Transport controls
