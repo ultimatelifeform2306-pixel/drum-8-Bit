@@ -366,6 +366,7 @@ footer { font-size: 12px; color: var(--muted); max-width: 70ch; line-height: 1.5
 
   <footer>
     Every sound is synthesized live in your browser: FM operators in the style of the YM2612 for melodies, toms and the orchestra hit, and 15-bit LFSR noise like the SN76489 for hats and cymbals. Drums run through an 8-bit sample-crusher to get that console DAC grit. Turn on Lo-Fi for extra crunch. Hit Rec to layer taps into a 2-bar loop.
+    <br><br><strong>No sound on your phone?</strong> Press the volume-up button a few times while a loop plays. On an iPhone the app plays through the speaker even with the silent switch on. If it is still quiet, flip the switch to ring, or close other apps that are playing audio.
   </footer>
 </div>
 
@@ -421,7 +422,32 @@ function lfsrBuffer(periodic) {
   return b;
 }
 
+// Phone speaker mode. iOS mutes Web Audio while the ring/silent switch is on, but keeps
+// media playback audible. Playing a looping silent <audio> element (and asking for the
+// "playback" audio session where supported) moves the page into media mode, so the pads
+// play through the built-in speaker without headphones.
+let speakerEl = null;
+function enableSpeaker() {
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  if (!speakerEl) {
+    const sr = 8000, n = 4000, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVE"); str(12, "fmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, "data"); v.setUint32(40, n * 2, true);
+    speakerEl = document.createElement("audio");
+    speakerEl.setAttribute("playsinline", "");
+    speakerEl.setAttribute("x-webkit-airplay", "deny");
+    speakerEl.loop = true;
+    speakerEl.preload = "auto";
+    speakerEl.src = URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+  }
+  if (speakerEl.paused) { const pr = speakerEl.play(); if (pr) pr.catch(() => {}); }
+}
+
 function initAudio() {
+  enableSpeaker();
   if (ctx) {
     if (ctx.state !== "running") ctx.resume();
     return;
@@ -463,7 +489,7 @@ function initAudio() {
   }
   applyLofi();
   document.getElementById("led").classList.add("on");
-  document.getElementById("powerText").textContent = "Power on";
+  document.getElementById("powerText").textContent = "Sound on · speaker works in silent mode";
 }
 
 function applyLofi() {
